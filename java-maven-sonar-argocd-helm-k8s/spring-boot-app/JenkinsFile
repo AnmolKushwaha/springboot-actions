@@ -47,7 +47,7 @@ pipeline {
         environment {
             GIT_REPO_NAME = "springboot"
             GIT_USER_NAME = "AnmolKushwaha"
-            GIT_BRANCH_NAME= "master"
+            GIT_BRANCH_NAME= "argocd"
         }
         steps {
             withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {

@@ -1,0 +1,197 @@
+---
+- name: Configure Jenkins Host
+  hosts: localhost
+  vars:
+    jenkins_url: "http://129.159.224.151:8080"
+    jenkins_user: "admin"
+    jenkins_password: "admin"
+    sonarqube_version: 9.4.0.54424
+    sonar_scanner_version: 4.6.0.2311
+
+    jenkins_plugins:
+      - junit
+      - mockito
+      - maven-plugin
+      - kubernetes
+      - sonar
+      - git
+      - docker-workflow
+  become: yes
+
+  tasks:
+    - name: Update apt packages
+      apt:
+        update_cache: yes
+
+    - name: Install Java
+      apt:
+        name: openjdk-11-jdk
+        state: present
+
+    - name: Install Docker dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+          - python3-pip
+        state: present  
+
+    - name: Allow incoming traffic on port 8080 using iptables
+      iptables:
+        chain: INPUT
+        in_interface: "{{ ansible_default_ipv4.interface }}"
+        protocol: tcp
+        state: present
+        destination_port: '8080'
+        jump: ACCEPT
+      become: yes
+
+    - name: Allow incoming traffic on port 9000 using iptables
+      iptables:
+        chain: INPUT
+        in_interface: "{{ ansible_default_ipv4.interface }}"
+        protocol: tcp
+        state: present
+        destination_port: '9000'
+        jump: ACCEPT
+      become: yes
+
+    - name: Save iptables rules persistently
+      command: "netfilter-persistent save"
+      become: yes
+
+    - name: Create Jenkins user
+      user:
+        name: jenkins
+        system: yes
+        shell: /bin/false
+      become: yes
+
+    - name: Download Jenkins WAR file
+      get_url:
+        url: http://updates.jenkins-ci.org/latest/jenkins.war
+        dest: /opt/jenkins.war
+      become: yes
+
+    - name: Create Jenkins systemd service unit file
+      copy:
+        content: |
+          [Unit]
+          Description=Jenkins Service
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/bin/java -Djenkins.install.runSetupWizard=false -jar /opt/jenkins.war --httpPort=8080
+          User=jenkins
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/jenkins.service
+      become: yes
+
+    - name: Start and enable Jenkins service
+      systemd:
+        name: jenkins
+        state: started
+        enabled: yes
+      become: yes
+
+    - name: Wait for Jenkins to start
+      wait_for:
+        port: 8080
+        delay: 30
+      become: yes
+
+    - name: Get Jenkins admin password from file.
+      slurp:
+        src: /home/jenkins/.jenkins/secrets/initialAdminPassword
+      register: admin_password_file
+      no_log: true
+
+    - name: Extract content from slurp result
+      set_fact:
+        admin_password: "{{ admin_password_file['content'] | b64decode }}"
+      no_log: true
+
+    - name: Remove trailing newline characters
+      set_fact:
+        admin_password: "{{ admin_password | regex_replace('\n', '') }}"
+      no_log: true
+
+    - name: Create Jenkins Configuration Directory
+      file:
+        path: /var/lib/jenkins/plugins
+        state: directory
+        owner: jenkins
+        group: jenkins
+        mode: 0755
+        recurse: yes
+
+    - name: Unarchive jenkins war file
+      unarchive:
+        src: /opt/jenkins.war
+        dest: /tmp/
+
+    - name: Copy default Jenkins Plugins
+      copy:
+         src: /tmp/WEB-INF/detached-plugins/
+         dest: /var/lib/jenkins/plugins/
+      notify: Restart Jenkins 
+
+    - name: Install Additional Jenkins Plugins
+      jenkins_plugin:
+          name: "{{ item }}"
+          url_username: "{{ jenkins_user }}"
+          url_password: "{{ admin_password }}"
+          timeout: 30
+          with_dependencies: true
+          state: present
+      with_items: "{{ jenkins_plugins }}"
+      become: yes
+      ignore_errors: true
+      notify: Restart Jenkins 
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+    
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      become: yes
+      notify: Restart Jenkins
+
+    - name: Install docker Python package
+      pip:
+        name: docker
+        executable: pip3 
+
+    - name: Run sonarqube docker image
+      docker_container:
+        name: sonarqube
+        image: sonarqube:community
+        ports: 
+           - "9000:9000"
+        detach: yes
+
+    - name: Print Jenkins URL
+      debug:
+        msg: "Jenkins is accessible at {{jenkins_url}}\n Login with credentials: {{ jenkins_user }}/{{ admin_password }}"
+
+
+  handlers:
+    - name: Restart Jenkins 
+      service:
+        name: jenkins
+        state: restarted
+      become: yes
+
+
+

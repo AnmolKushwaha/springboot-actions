@@ -52,9 +52,9 @@ pipeline {
         steps {
             withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                 sh '''
-                    git config --global user.email "anmolkushwaha858@gmail.com"
-                    git config --global user.name "AnmolKushwaha"
-                    git config --global --add safe.directory /home/jenkins/.jenkins/workspace/${JOB_NAME}
+                    git config user.email "anmolkushwaha858@gmail.com"
+                    git config user.name "AnmolKushwaha"
+                    git config --add safe.directory /home/jenkins/.jenkins/workspace/${JOB_NAME}
                     git remote set-url origin https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}
                     git checkout ${GIT_BRANCH_NAME}
                     BUILD_NUMBER=${BUILD_NUMBER}

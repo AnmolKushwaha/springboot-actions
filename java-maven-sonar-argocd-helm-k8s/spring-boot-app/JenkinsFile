@@ -58,6 +58,7 @@ pipeline {
                    git config --global --add safe.directory /home/jenkins/.jenkins/workspace/${JOB_NAME}
                     git remote set-url origin https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}
                     git checkout ${GIT_BRANCH_NAME}
+                    git pull origin ${GIT_BRANCH_NAME}
                     BUILD_NUMBER=":${BUILD_NUMBER}"
                     REPLACE_TAG=":$(grep image deployment.yml| cut -d ":" -f3)"
                     sed -i "s/${REPLACE_TAG}/${BUILD_NUMBER}/g" deployment.yml

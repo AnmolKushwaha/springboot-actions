@@ -36,9 +36,8 @@ jobs:
           DOCKER_IMAGE: "captainankush/ultimate-cicd:${{ github.run_number }}"
         run: |
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
-          docker build -t $DOCKER_IMAGE .
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker push $DOCKER_IMAGE
+          docker buildx build --platform linux/amd64,linux/arm64 -t $DOCKER_IMAGE --push .
           docker rmi $DOCKER_IMAGE
 
       - name: Checkout Deployment Repository
@@ -55,7 +54,7 @@ jobs:
       - name: Update Deployment File
         run: |
           git config --local user.email "anmolkushwaha858@gmail.com"
-          git config --local user.name "AnmolKushwaha"
+          git config --local user.name "{{ github.user }}"
           git remote set-url origin https://${{ secrets.G_TOKEN }}@github.com/${{ github.user }}/${{ github.repository }}
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
           sed -i "s/$(grep image deployment.yml | cut -d ":" -f3)/${{ github.run_number }}/g" deployment.yml

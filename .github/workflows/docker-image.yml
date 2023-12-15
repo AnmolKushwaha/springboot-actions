@@ -43,9 +43,12 @@ jobs:
           docker rmi $DOCKER_IMAGE
 
       - name: Checkout Repository
+        env:
+          GIT_REPO_NAME: "springboot-actions"
+          GIT_USER_NAME: "AnmolKushwaha"
         uses: actions/checkout@v2
         with:
-          repository: username/other-repo  # Replace with the username and repository name
+          repository: $GIT_USER_NAME/$GIT_REPO_NAME  # Replace with the username and repository name
 
           
       - name: Update Deployment File

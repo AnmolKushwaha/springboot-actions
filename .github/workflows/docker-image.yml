@@ -27,7 +27,7 @@ jobs:
 
       - name: Static Code Analysis
         env:
-          SONAR_URL="http://129.159.224.151:9000"
+          SONAR_URL: "http://129.159.224.151:9000"
         run: |
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
           mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} -Dsonar.host.url=$SONAR_URL

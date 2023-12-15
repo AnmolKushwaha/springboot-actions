@@ -46,10 +46,12 @@ jobs:
         env:
           GIT_REPO_NAME: "springboot-actions"
           GIT_USER_NAME: "AnmolKushwaha"
+          GIT_BRANCH_NAME: "argocd"
+
         uses: actions/checkout@v2
         with:
           repository: $GIT_USER_NAME/$GIT_REPO_NAME  # Replace with the username and repository name
-
+          ref: $GIT_BRANCH_NAME
           
       - name: Update Deployment File
         env:

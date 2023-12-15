@@ -26,10 +26,11 @@ jobs:
           mvn clean package
 
       - name: Static Code Analysis
-        run: |
+        env:
           SONAR_URL="http://129.159.224.151:9000"
+        run: |
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
-          mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} -Dsonar.host.url=${{ SONAR_URL }}
+          mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_AUTH_TOKEN }} -Dsonar.host.url=$SONAR_URL
 
       - name: Build and Push Docker Image
         env:

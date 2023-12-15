@@ -58,6 +58,7 @@ jobs:
            REPLACE_TAG: ""
         run: 
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
+          ls -ltr
           REPLACE_TAG= ":$(grep image deployment.yml | cut -d ":" -f3)"
           sed -i "s/$REPLACE_TAG/${{ github.run_number }}/g" deployment.yml
           git add deployment.yml

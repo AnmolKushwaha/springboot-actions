@@ -56,7 +56,7 @@ jobs:
       - name: Update Deployment File
         env:
            REPLACE_TAG: ""
-        run: 
+        run: |
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
           ls -ltr
           REPLACE_TAG= ":$(grep image deployment.yml | cut -d ":" -f3)"

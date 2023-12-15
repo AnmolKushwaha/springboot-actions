@@ -21,7 +21,6 @@ jobs:
 
       - name: Build and Test
         run: |
-          ls -ltr
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
           mvn clean package
 
@@ -42,7 +41,7 @@ jobs:
           docker push $DOCKER_IMAGE
           docker rmi $DOCKER_IMAGE
 
-      - name: Checkout Repository
+      - name: Checkout Deployment Repository
         env:
           GIT_REPO_NAME: "springboot-actions"
           GIT_USER_NAME: "AnmolKushwaha"

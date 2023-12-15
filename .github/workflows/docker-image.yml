@@ -65,7 +65,7 @@ jobs:
           git remote set-url origin https://${{ secrets.G_TOKEN }}@github.com/$GIT_USER_NAME/$GIT_REPO_NAME
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests
           REPLACE_TAG= ":$(grep image deployment.yml | cut -d ":" -f3)"
-          echo "$REPLACE_TAG
+          echo "$REPLACE_TAG"
           sed -i "s/$REPLACE_TAG/${{ github.run_number }}/g" deployment.yml
           git add deployment.yml
           git commit -m "Update deployment image to version {{ github.run_number }}"

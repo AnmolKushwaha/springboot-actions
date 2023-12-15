@@ -48,7 +48,7 @@ jobs:
           GIT_USER_NAME: "AnmolKushwaha"
           GIT_BRANCH_NAME: "argocd"
         run: |
-          git clone https://github.com$GIT_USER_NAME/$GIT_REPO_NAME
+          git clone https://github.com/$GIT_USER_NAME/$GIT_REPO_NAME
           git config --global user.email "anmolkushwaha858@gmail.com"
           git config --global user.name "AnmolKushwaha"
           echo "${{ github.repository }}/${{ github.workflow }}"

@@ -37,7 +37,8 @@ jobs:
         run: |
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker buildx build --push --platform linux/amd64,linux/arm64 -t $DOCKER_IMAGE .
+          docker buildx build --platform linux/amd64,linux/arm64 -t $DOCKER_IMAGE .
+          docker push $DOCKER_IMAGE
           docker rmi $DOCKER_IMAGE
 
       - name: Checkout Deployment Repository
